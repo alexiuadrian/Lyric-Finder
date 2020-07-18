@@ -1,5 +1,6 @@
 import kivy
 import Lyric_Finder
+import threading
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
@@ -8,6 +9,7 @@ from kivy.uix.button import Button
 from subprocess import Popen, PIPE
 
 class SearchPage(GridLayout):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.cols = 2
@@ -28,6 +30,7 @@ class SearchPage(GridLayout):
         self.submit.bind(on_press = self.onButtonPress)
 
     def onButtonPress(self, event):
+
         self.lyrics = Lyric_Finder.browserInstance_faster(self.artist.text, self.song.text)
 
         while self.lyrics == "Try again" or self.lyrics is None:
