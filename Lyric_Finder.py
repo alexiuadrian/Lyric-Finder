@@ -1,6 +1,7 @@
 import bs4
 import requests
 import sys
+import os
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -14,18 +15,22 @@ def getLyrics(url):
 
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
 
+    lyrics = []
+
     try:
         lyrics = soup.find_all('div', class_='lyrics')
     except Exception:
         browser.close()
 
-    if len(lyrics) == 0:
-        print('Not found in .lyrics div')
+    if len(lyrics[0]) == 0:
+        #print('Not found in .lyrics div')
         lyrics = soup.find_all('div', class_='Lyrics__Container')
     
     return lyrics
 
 song = input()
+
+os.environ['MOZ_HEADLESS'] = '1'
 
 browser = webdriver.Firefox()
 
@@ -42,7 +47,8 @@ try:
     myElem = WebDriverWait(browser, delay).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1) > div:nth-child(2)')))
     #print("Page is ready!")
 except TimeoutException:
-    print("Loading took too much time!")
+    #print("Loading took too much time!")
+    browser.close()
 
 try:
     best_match = browser.find_element_by_css_selector('div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1) > div:nth-child(2)')
@@ -57,14 +63,11 @@ except TimeoutException:
     try:
         myElem = WebDriverWait(browser, 0).until(EC.presence_of_element_located((By.CLASS_NAME, 'Lyrics__Container')))
     except TimeoutException:
-        print("Loading took too much time!")
+        #print("Loading took too much time!")
+        browser.close()
 
 lyrics = getLyrics(browser.current_url)
 
 print(lyrics[0].text)
 
-# for i in range(0, len(lyrics)):
-#     if len(lyrics[i].text) > 50:
-#         print(lyrics[i].text)
-    
 browser.close()
