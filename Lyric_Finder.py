@@ -19,7 +19,7 @@ def getLyrics(url):
         try:
             lyrics = soup.find(class_='Lyrics__Container')
         except Exception:
-            browser.close()
+            return "Try again"
 
     if lyrics is None:
         return "Try again"
@@ -68,13 +68,19 @@ def browserInstance_faster(artist, song):
     browser.get('https://genius.com/search?q=' + artist + '%20' + song)
 
     try:
-        myElem = WebDriverWait(browser, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1)')))
+
+        myElem = WebDriverWait(browser, delay).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1)')))
 
         best_match = browser.find_element_by_css_selector('div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1)').get_attribute('href')
 
         try:
 
             lyrics = getLyrics(best_match)
+
+            while lyrics == "Try again" or lyrics is None:
+                lyrics = getLyrics(best_match)
+
+            print(lyrics)
 
             browser.close()
 

@@ -33,9 +33,6 @@ class SearchPage(GridLayout):
 
         self.lyrics = Lyric_Finder.browserInstance_faster(self.artist.text, self.song.text)
 
-        while self.lyrics == "Try again" or self.lyrics is None:
-            self.lyrics = Lyric_Finder.browserInstance_faster(self.artist.text, self.song.text)
-
         lyrics_file = open('versuri.adi', 'w')
         lyrics_file.write(self.lyrics)
         lyrics_file.close()
