@@ -9,65 +9,80 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 
 def getLyrics(url):
-    print(url)
     res = requests.get(url)
-    res.raise_for_status()
 
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
 
-    lyrics = []
+    try:
+        lyrics = soup.find(class_='lyrics')
+    except Exception:
+        try:
+            lyrics = soup.find(class_='Lyrics__Container')
+        except Exception:
+            browser.close()
+
+    if lyrics is None:
+        return "Try again"
+    else:
+        return lyrics.text
+
+def browserInstance(artist, song):
+    delay = 5
+
+    os.environ['MOZ_HEADLESS'] = '1'
+
+    browser = webdriver.Firefox()
+
+    browser.get('https://genius.com/search?q=' + artist + '%20' + song)
 
     try:
-        lyrics = soup.find_all('div', class_='lyrics')
+        best_match = browser.find_element_by_css_selector('div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1) > div:nth-child(2)')
+        best_match.click()
+        print(browser.current_url)
+
+        try:
+            myElem = WebDriverWait(browser, delay).until(EC.presence_of_element_located((By.ID, 'fb-root')))
+
+            url = browser.current_url
+
+            lyrics = getLyrics(url)
+
+            browser.close()
+
+            return lyrics
+
+        except Exception:
+            browser.close()
+
     except Exception:
         browser.close()
 
-    if len(lyrics[0]) == 0:
-        #print('Not found in .lyrics div')
-        lyrics = soup.find_all('div', class_='Lyrics__Container')
-    
-    return lyrics
+def browserInstance_faster(artist, song):
+    #Faster scrapping by going straight to links than clicking on buttons
+    delay = 5
 
-song = input()
+    os.environ['MOZ_HEADLESS'] = '1'
 
-os.environ['MOZ_HEADLESS'] = '1'
+    browser = webdriver.Firefox()
 
-browser = webdriver.Firefox()
+    browser.get('https://genius.com/search?q=' + artist + '%20' + song)
 
-browser.get('https://genius.com/')
-
-search = browser.find_element_by_css_selector('.PageHeaderSearchdesktop__Input-eom9vk-2')
-
-search.send_keys(song)
-search.submit()
-
-delay = 8
-
-try:
-    myElem = WebDriverWait(browser, delay).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1) > div:nth-child(2)')))
-    #print("Page is ready!")
-except TimeoutException:
-    #print("Loading took too much time!")
-    browser.close()
-
-try:
-    best_match = browser.find_element_by_css_selector('div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1) > div:nth-child(2)')
-    best_match.click()
-except Exception:
-    browser.close()
-
-try:
-    myElem = WebDriverWait(browser, delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'lyrics')))
-    #print("Page is ready!")
-except TimeoutException:
     try:
-        myElem = WebDriverWait(browser, 0).until(EC.presence_of_element_located((By.CLASS_NAME, 'Lyrics__Container')))
-    except TimeoutException:
-        #print("Loading took too much time!")
+        myElem = WebDriverWait(browser, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1)')))
+
+        best_match = browser.find_element_by_css_selector('div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1)').get_attribute('href')
+
+        try:
+
+            lyrics = getLyrics(best_match)
+
+            browser.close()
+
+            return lyrics
+
+        except Exception:
+            browser.close()
+
+    except Exception:
+        print("sada")
         browser.close()
-
-lyrics = getLyrics(browser.current_url)
-
-print(lyrics[0].text)
-
-browser.close()
