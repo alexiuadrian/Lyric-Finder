@@ -33,7 +33,7 @@ def browserInstance(artist, song):
 
     browser = webdriver.Firefox()
 
-    browser.get('https://genius.com/search?q=' + artist + '%20' + song)
+    browser.get('https://genius.com/')
 
     try:
         best_match = browser.find_element_by_css_selector('div.column_layout-column_span:nth-child(1) > div:nth-child(1) > search-result-section:nth-child(1) > div:nth-child(1) > div:nth-child(2) > search-result-items:nth-child(1) > div:nth-child(1) > search-result-item:nth-child(1) > div:nth-child(1) > mini-song-card:nth-child(1) > a:nth-child(1) > div:nth-child(2)')
